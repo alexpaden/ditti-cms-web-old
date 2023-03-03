@@ -2,12 +2,13 @@
 // with added process.env.VERCEL_URL detection to support preview deployments
 // and with auth option logic extracted into a 'getAuthOptions' function so it
 // can be used to get the session server-side with 'unstable_getServerSession'
-import { IncomingMessage } from 'http';
-import { NextApiRequest, NextApiResponse } from 'next';
-import NextAuth, { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { getCsrfToken } from 'next-auth/react';
-import { SiweMessage } from 'siwe';
+import { IncomingMessage } from "http";
+import { NextApiRequest, NextApiResponse } from "next";
+import NextAuth, { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { getCsrfToken } from "next-auth/react";
+import { SiweMessage } from "siwe";
+import { MerkleAPIClient } from "@standard-crypto/farcaster-js";
 
 export function getAuthOptions(req: IncomingMessage): NextAuthOptions {
   const providers = [
@@ -15,7 +16,7 @@ export function getAuthOptions(req: IncomingMessage): NextAuthOptions {
       async authorize(credentials) {
         try {
           const siwe = new SiweMessage(
-            JSON.parse(credentials?.message || '{}')
+            JSON.parse(credentials?.message || "{}")
           );
 
           const nextAuthUrl =
@@ -36,7 +37,7 @@ export function getAuthOptions(req: IncomingMessage): NextAuthOptions {
             return null;
           }
 
-          await siwe.validate(credentials?.signature || '');
+          await siwe.validate(credentials?.signature || "");
           return {
             id: siwe.address,
           };
@@ -46,17 +47,17 @@ export function getAuthOptions(req: IncomingMessage): NextAuthOptions {
       },
       credentials: {
         message: {
-          label: 'Message',
-          placeholder: '0x0',
-          type: 'text',
+          label: "Message",
+          placeholder: "0x0",
+          type: "text",
         },
         signature: {
-          label: 'Signature',
-          placeholder: '0x0',
-          type: 'text',
+          label: "Signature",
+          placeholder: "0x0",
+          type: "text",
         },
       },
-      name: 'Ethereum',
+      name: "Ethereum",
     }),
   ];
 
@@ -67,6 +68,18 @@ export function getAuthOptions(req: IncomingMessage): NextAuthOptions {
         session.user = {
           name: token.sub,
         };
+        try {
+          const client = new MerkleAPIClient({
+            secret: process.env.WARP_SECRET!,
+          });
+          const user = await client.lookupUserByVerification(token.sub!);
+          if (user) {
+            session.fid = user.fid;
+          }
+        } catch (e) {
+          console.log("In auth ", e);
+        }
+
         return session;
       },
     },
@@ -74,7 +87,7 @@ export function getAuthOptions(req: IncomingMessage): NextAuthOptions {
     providers,
     secret: process.env.NEXTAUTH_SECRET,
     session: {
-      strategy: 'jwt',
+      strategy: "jwt",
     },
   };
 }
@@ -85,13 +98,13 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
   const authOptions = getAuthOptions(req);
 
   if (!Array.isArray(req.query.nextauth)) {
-    res.status(400).send('Bad request');
+    res.status(400).send("Bad request");
     return;
   }
 
   const isDefaultSigninPage =
-    req.method === 'GET' &&
-    req.query.nextauth.find(value => value === 'signin');
+    req.method === "GET" &&
+    req.query.nextauth.find((value) => value === "signin");
 
   // Hide Sign-In with Ethereum from default sign page
   if (isDefaultSigninPage) {

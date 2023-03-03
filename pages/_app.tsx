@@ -20,6 +20,7 @@ import {
   GetSiweMessageOptions,
 } from "@rainbow-me/rainbowkit-siwe-next-auth";
 import Header from "./header";
+import { Session } from "next-auth";
 
 const { chains, provider, webSocketProvider } = configureChains(
   [
@@ -64,7 +65,13 @@ const getSiweMessageOptions: GetSiweMessageOptions = () => ({
   statement: "Sign in to Ditti CMS",
 });
 
-export default function App({ Component, pageProps }: AppProps) {
+type CustomAppProps = AppProps & {
+  pageProps: {
+    session?: Session;
+  };
+};
+
+export default function App({ Component, pageProps }: CustomAppProps) {
   return (
     <SessionProvider refetchInterval={0} session={pageProps.session}>
       <WagmiConfig client={wagmiClient}>
