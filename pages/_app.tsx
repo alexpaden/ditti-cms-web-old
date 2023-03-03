@@ -58,7 +58,6 @@ const wagmiClient = createClient({
   connectors,
   provider,
   webSocketProvider,
-  version: "2",
 });
 
 const getSiweMessageOptions: GetSiweMessageOptions = () => ({
