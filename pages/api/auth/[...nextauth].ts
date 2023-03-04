@@ -70,7 +70,7 @@ export function getAuthOptions(req: IncomingMessage): NextAuthOptions {
         };
         try {
           const client = new MerkleAPIClient({
-            secret: process.env.WARP_SECRET!,
+            secret: process.env.NEXT_WARP_SECRET!,
           });
           const user = await client.lookupUserByVerification(token.sub!);
           if (user) {
