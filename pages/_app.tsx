@@ -71,7 +71,7 @@ type CustomAppProps = AppProps & {
   };
 };
 
-export default function App({ Component, pageProps }: CustomAppProps) {
+function App({ Component, pageProps }: CustomAppProps) {
   return (
     <SessionProvider refetchInterval={0} session={pageProps.session}>
       <WagmiConfig client={wagmiClient}>
@@ -87,3 +87,5 @@ export default function App({ Component, pageProps }: CustomAppProps) {
     </SessionProvider>
   );
 }
+
+export default App;
