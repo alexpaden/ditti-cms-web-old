@@ -146,8 +146,8 @@ const Follow = () => {
         const fids = [
           ...timeGrouped.follower_changes.added,
           ...timeGrouped.follower_changes.removed,
-          //...timeGrouped.following_changes.added,
-          //...timeGrouped.following_changes.removed,
+          ...timeGrouped.following_changes.added,
+          ...timeGrouped.following_changes.removed,
         ];
         const uniqueFids = [...new Set(fids)];
         const body = JSON.stringify({ fids: uniqueFids });

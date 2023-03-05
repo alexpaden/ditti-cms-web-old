@@ -1,43 +1,51 @@
-import { MerkleAPIClient, UserProfile } from "@standard-crypto/farcaster-js";
+import { createClient } from "@supabase/supabase-js";
 import { NextApiRequest, NextApiResponse } from "next";
 
-type User = {
-  fid: number;
-  username: string;
-  pfp: { url: string; verified: boolean };
-  profile?: {
-    bio: { text: string; mentions: [] };
-    location: { placeId: string; description: string };
-  };
-  followerCount: number;
-  followingCount: number;
-  referrerUsername: string;
-  viewerContext: {
-    following: boolean;
-    followedBy: boolean;
-    canSendDirectCasts: boolean;
-  };
-};
-
 async function fetchUsersByFids(fids: number[]) {
-  const client = new MerkleAPIClient({ secret: process.env.NEXT_WARP_SECRET! });
-  const promises = fids.map((fid) => client.lookupUserByFid(fid));
-  const responses = await Promise.all(promises);
+  console.log(fids.length);
   try {
-    const users = responses.map((response) => ({
-      fid: response?.fid,
-      username: response?.username || "",
-      pfp: response?.pfp || { url: "", verified: false },
-      profile: response?.profile as UserProfile,
-      followerCount: response?.followerCount,
-      followingCount: response?.followingCount,
-      referrerUsername: response?.referrerUsername || "",
-      viewerContext: response?.viewerContext || {
-        following: false,
-        followedBy: false,
-        canSendDirectCasts: false,
-      },
-    }));
+    // Create a single supabase client for interacting with your database
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_KEY!
+    );
+
+    const users = [];
+
+    // Divide the ids into chunks of 500 and fetch each chunk separately
+    for (let i = 0; i < fids.length; i += 500) {
+      const chunkIds = fids.slice(i, i + 500);
+
+      // Fetch the profiles with matching ids
+      const { data, error } = await supabase
+        .from("profile")
+        .select("*")
+        .in("id", chunkIds);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Map the response data to User objects
+      const chunkUsers = data.map((profile: any) => ({
+        fid: profile.id,
+        username: profile.username,
+        pfp: { uri: profile.avatar_url },
+        profile: {
+          displayName: profile.display_name,
+          bio: profile.bio,
+          referrer: profile.referrer,
+          registeredAt: profile.registered_at,
+          updatedAt: profile.updated_at,
+        },
+        followerCount: profile.followers,
+        followingCount: profile.following,
+      }));
+
+      // Add the chunk users to the users array
+      users.push(...chunkUsers);
+    }
+
     return users;
   } catch (e) {
     console.error(e);
@@ -52,6 +60,7 @@ export default async function handler(
   try {
     const { fids } = req.body;
     const users = await fetchUsersByFids(fids);
+    console.log(users.length);
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch users" });
