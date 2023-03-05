@@ -1,5 +1,4 @@
 import { Box, Typography } from "@mui/material";
-import { getSession, GetSessionParams, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 type TimeGrouped = {
@@ -51,7 +50,6 @@ type FollowProps = {
 };
 
 const Follow = ({ sessionFid }: FollowProps) => {
-  const { data: session } = useSession();
   const [users, setUsers] = useState<User[]>([]);
   const [timeGrouped, setTimeGrouped] = useState<TimeGrouped | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
