@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { useSession } from "next-auth/react";
+import { getSession, GetSessionParams, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 type TimeGrouped = {
@@ -46,7 +46,11 @@ type Track = {
 
 type Tracks = Track[];
 
-const Follow = () => {
+type FollowProps = {
+  sessionFid: number;
+};
+
+const Follow = ({ sessionFid }: FollowProps) => {
   const { data: session } = useSession();
   const [users, setUsers] = useState<User[]>([]);
   const [timeGrouped, setTimeGrouped] = useState<TimeGrouped | null>(null);
@@ -55,7 +59,8 @@ const Follow = () => {
   const [showFollowing, setShowFollowing] = useState<boolean>(false); // set initial value to be false
 
   async function fetchTracks() {
-    const res = await fetch("/api/tracks");
+    console.log(sessionFid);
+    const res = await fetch(`/api/tracks/${sessionFid}`);
     if (res.ok) {
       return res.json();
     } else {

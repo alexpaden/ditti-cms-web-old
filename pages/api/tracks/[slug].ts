@@ -15,9 +15,9 @@ type Track = {
 
 type Tracks = Track[];
 
-const fetchTracks = async () => {
+const fetchTracks = async (fid: number) => {
   try {
-    const url = `https://ditti-cms-api-production.up.railway.app/follow-trackers/533`;
+    const url = `https://ditti-cms-api-production.up.railway.app/follow-trackers/${fid}`;
     const headers = new Headers();
     const DITTI_API_KEY = process.env.NEXT_DITTI_API_KEY!;
     headers.append("Authorization", `${DITTI_API_KEY}`);
@@ -41,8 +41,10 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const { fids } = req.body;
-    const tracks: Tracks = await fetchTracks();
+    const { slug } = req.query;
+    const trackId = Number(slug);
+    console.log(trackId);
+    const tracks: Tracks = await fetchTracks(trackId);
     res.status(200).json(tracks);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch tracks" });
