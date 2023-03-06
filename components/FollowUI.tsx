@@ -7,6 +7,36 @@ type FollowUIProps = {
   toggleShowFollowing: () => void;
 };
 
+const UserDisplay = ({ user }: { user: User }) => {
+  const now = new Date().getTime();
+  const registeredAt = new Date(user.profile.registeredAt).getTime();
+  const age = Math.floor((now - registeredAt) / (1000 * 60 * 60 * 24 * 365));
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
+      <img src={user.pfp.uri} alt={user.username} style={{ width: 50 }} />
+      <div style={{ display: "flex", flexDirection: "column", marginLeft: 10 }}>
+        <div>{user.fid}</div>
+        <div>{user.username}</div>
+        <div>{user.profile.displayName}</div>
+        <div>{age}</div>
+      </div>
+      <div style={{ marginLeft: 10 }}>{user.profile.bio}</div>
+      <div style={{ marginLeft: 10 }}>
+        <div>Followers: {user.followerCount}</div>
+        <div>Following: {user.followingCount}</div>
+        <div>
+          F/F Ratio:{" "}
+          {user.followingCount === 0
+            ? "∞"
+            : Math.round((user.followerCount / user.followingCount) * 100)}
+          %
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const FollowUI = ({
   users,
   timeGrouped,
@@ -28,30 +58,24 @@ const FollowUI = ({
       <button onClick={toggleShowFollowing}>
         {showFollowing ? "View Follower Changes" : "View Following Changes"}
       </button>
-      <ul>
-        {changes.added.length > 0 && (
-          <li>
-            <h3>Added:</h3>
-            <ul>
-              {changes.added.map((fid) => {
-                const user = users.find((user) => user.fid === fid);
-                return user ? <li key={fid}>{user.username}</li> : null;
-              })}
-            </ul>
-          </li>
-        )}
-        {changes.removed.length > 0 && (
-          <li>
-            <h3>Removed:</h3>
-            <ul>
-              {changes.removed.map((fid) => {
-                const user = users.find((user) => user.fid === fid);
-                return user ? <li key={fid}>{user.username}</li> : null;
-              })}
-            </ul>
-          </li>
-        )}
-      </ul>
+      {changes.added.length > 0 && (
+        <div>
+          <h3>Added:</h3>
+          {changes.added.map((fid) => {
+            const user = users.find((user) => user.fid === fid);
+            return user ? <UserDisplay key={fid} user={user} /> : null;
+          })}
+        </div>
+      )}
+      {changes.removed.length > 0 && (
+        <div>
+          <h3>Removed:</h3>
+          {changes.removed.map((fid) => {
+            const user = users.find((user) => user.fid === fid);
+            return user ? <UserDisplay key={fid} user={user} /> : null;
+          })}
+        </div>
+      )}
     </div>
   );
 };
