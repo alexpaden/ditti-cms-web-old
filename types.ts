@@ -1,8 +1,16 @@
 export interface User {
   fid: number;
   username: string;
-  name: string;
-  avatar_url: string;
+  pfp: { uri: string };
+  profile: {
+    displayName: string;
+    bio: string;
+    referrer: string | null;
+    registeredAt: string;
+    updatedAt: string;
+  };
+  followerCount: number;
+  followingCount: number;
 }
 
 export interface TimeGrouped {
