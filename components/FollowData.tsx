@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { User, TimeGrouped } from "../types";
-import FollowUI from "./FollowUI";
+import FollowUI from "../components/FollowUI";
 
 type FollowDataProps = {
   sessionFid: number;
@@ -14,7 +14,6 @@ const FollowData = ({ sessionFid }: FollowDataProps) => {
   const [showFollowing, setShowFollowing] = useState<boolean>(false); // set initial value to be false
 
   async function fetchTracks() {
-    console.log(sessionFid);
     const res = await fetch(`/api/tracks/${sessionFid}`);
     if (res.ok) {
       return res.json();
@@ -111,38 +110,47 @@ const FollowData = ({ sessionFid }: FollowDataProps) => {
         }
       }
     }
+
     return timeGrouped;
   }
 
   useEffect(() => {
     setLoading(true);
-    groupTracksByTime().then((timeGrouped) => {
-      const fids = [
-        ...timeGrouped.follower_changes.added,
-        ...timeGrouped.follower_changes.removed,
-        ...timeGrouped.following_changes.added,
-        ...timeGrouped.following_changes.removed,
-      ];
-      const uniqueFids = [...new Set(fids)];
-      fetchUsers(uniqueFids)
-        .then((users) => {
-          setUsers(users);
-          setTimeGrouped(timeGrouped);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          setError(err.message);
-        });
-    });
-  }, []);
+    groupTracksByTime()
+      .then((timeGrouped) => {
+        const fids = showFollowing
+          ? [
+              ...timeGrouped.following_changes.added,
+              ...timeGrouped.following_changes.removed,
+            ]
+          : [
+              ...timeGrouped.follower_changes.added,
+              ...timeGrouped.follower_changes.removed,
+            ];
+        const uniqueFids = [...new Set(fids)];
+        fetchUsers(uniqueFids)
+          .then((users) => {
+            setUsers(users);
+            setTimeGrouped(timeGrouped);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.error(err);
+            setError(err.message);
+          });
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.message);
+      });
+  }, [showFollowing]);
 
   return (
     <FollowUI
       users={users}
       timeGrouped={timeGrouped}
       showFollowing={showFollowing}
-      toggleShowFollowing={toggleShowFollowing}
+      toggleShowFollowing={() => setShowFollowing(!showFollowing)}
     />
   );
 };
