@@ -63,23 +63,35 @@ const FollowUI = ({
       <Box my={2} textAlign="center">
         {showAdded ? (
           <div>
-            <h3>Added:</h3>
-            {changes.added
-              .map((fid) => {
-                const user = users.find((user) => user.fid === fid);
-                return user ? <UserDisplay key={fid} user={user} /> : null;
-              })
-              .slice(startIndex, endIndex)}
+            {changes.added.length > 0 ? (
+              <>
+                <h3>Added:</h3>
+                {changes.added
+                  .map((fid) => {
+                    const user = users.find((user) => user.fid === fid);
+                    return user ? <UserDisplay key={fid} user={user} /> : null;
+                  })
+                  .slice(startIndex, endIndex)}
+              </>
+            ) : (
+              <p>No added changes found.</p>
+            )}
           </div>
         ) : (
           <div>
-            <h3>Removed:</h3>
-            {changes.removed
-              .map((fid) => {
-                const user = users.find((user) => user.fid === fid);
-                return user ? <UserDisplay key={fid} user={user} /> : null;
-              })
-              .slice(startIndex, endIndex)}
+            {changes.removed.length > 0 ? (
+              <>
+                <h3>Removed:</h3>
+                {changes.removed
+                  .map((fid) => {
+                    const user = users.find((user) => user.fid === fid);
+                    return user ? <UserDisplay key={fid} user={user} /> : null;
+                  })
+                  .slice(startIndex, endIndex)}
+              </>
+            ) : (
+              <p>No removed changes found.</p>
+            )}
           </div>
         )}
       </Box>
