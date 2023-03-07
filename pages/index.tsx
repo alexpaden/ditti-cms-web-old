@@ -8,7 +8,11 @@ const FollowPage = ({ fid }: { fid: number }) => {
   return (
     <div>
       <h1>Follow Change Tracker</h1>
-      {sessionFid && <FollowData sessionFid={sessionFid} />}
+      {sessionFid ? (
+        <FollowData sessionFid={sessionFid} />
+      ) : (
+        <p>Please connect your wallet to view follow changes.</p>
+      )}
     </div>
   );
 };
