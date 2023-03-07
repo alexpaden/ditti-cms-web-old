@@ -36,6 +36,26 @@ const fetchTracks = async (fid: number) => {
   }
 };
 
+const requestNewTrack = async (fid: number) => {
+  try {
+    const url = `https://ditti-cms-api-production.up.railway.app/follow-trackers/${fid}`;
+    const headers = new Headers();
+    const DITTI_API_KEY = process.env.NEXT_DITTI_API_KEY!;
+    headers.append("Authorization", `${DITTI_API_KEY}`);
+
+    const options = {
+      method: "POST",
+      headers: headers,
+    };
+
+    const res = await fetch(url, options);
+    return res;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -44,9 +64,26 @@ export default async function handler(
     const { slug } = req.query;
     const trackId = Number(slug);
     console.log(trackId);
-    const tracks: Tracks = await fetchTracks(trackId);
-    res.status(200).json(tracks);
+
+    if (req.method === "POST") {
+      try {
+        await requestNewTrack(trackId);
+        res.status(200).json({ message: "Track added successfully" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to add track" });
+      }
+    } else {
+      try {
+        const tracks: Tracks = await fetchTracks(trackId);
+        res.status(200).json(tracks);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch tracks" });
+      }
+    }
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch tracks" });
+    console.error(error);
+    res.status(500).json({ error: "Unknown error occurred in /tracks/[slug]" });
   }
 }
