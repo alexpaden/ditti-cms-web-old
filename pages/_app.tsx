@@ -19,7 +19,7 @@ import {
   RainbowKitSiweNextAuthProvider,
   GetSiweMessageOptions,
 } from "@rainbow-me/rainbowkit-siwe-next-auth";
-import Header from "./header";
+import Header from "./Header";
 import { Session } from "next-auth";
 
 const { chains, provider, webSocketProvider } = configureChains(
