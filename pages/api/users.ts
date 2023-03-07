@@ -60,7 +60,6 @@ export default async function handler(
   try {
     const { fids } = req.body;
     const users = await fetchUsersByFids(fids);
-    console.log(users.length);
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch users" });
