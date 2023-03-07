@@ -7,7 +7,7 @@ const FollowPage = ({ fid }: { fid: number }) => {
 
   return (
     <div>
-      <h1>Follow Page</h1>
+      <h1>Follow Change Tracker</h1>
       {sessionFid && <FollowData sessionFid={sessionFid} />}
     </div>
   );
