@@ -17,7 +17,7 @@ type Tracks = Track[];
 
 const fetchTracks = async (fid: number) => {
   try {
-    const url = `https://ditti-cms-api-production.up.railway.app/follow-trackers/${fid}`;
+    const url = `${process.env.DITTI_API_URL}/follow-trackers/${fid}`;
     const headers = new Headers();
     const DITTI_API_KEY = process.env.NEXT_DITTI_API_KEY!;
     headers.append("Authorization", `${DITTI_API_KEY}`);
@@ -38,7 +38,7 @@ const fetchTracks = async (fid: number) => {
 
 const requestNewTrack = async (fid: number) => {
   try {
-    const url = `https://ditti-cms-api-production.up.railway.app/follow-trackers/${fid}`;
+    const url = `${process.env.DITTI_API_URL}/follow-trackers/${fid}`;
     const headers = new Headers();
     const DITTI_API_KEY = process.env.NEXT_DITTI_API_KEY!;
     headers.append("Authorization", `${DITTI_API_KEY}`);
