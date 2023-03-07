@@ -1,5 +1,7 @@
 import { User, TimeGrouped } from "../types";
 import UserDisplay from "./UserUI";
+import { useState } from "react";
+import { Switch, Button, Box, Container, Typography } from "@material-ui/core";
 
 type FollowUIProps = {
   users: User[] | null | undefined;
@@ -23,31 +25,87 @@ const FollowUI = ({
     ? timeGrouped.following_changes
     : timeGrouped.follower_changes;
 
+  const [showAdded, setShowAdded] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
   return (
-    <div>
-      <h2>{title}</h2>
-      <button onClick={toggleShowFollowing}>
-        {showFollowing ? "View Follower Changes" : "View Following Changes"}
-      </button>
-      {changes.added.length > 0 && (
-        <div>
-          <h3>Added:</h3>
-          {changes.added.map((fid) => {
-            const user = users.find((user) => user.fid === fid);
-            return user ? <UserDisplay key={fid} user={user} /> : null;
-          })}
-        </div>
-      )}
-      {changes.removed.length > 0 && (
-        <div>
-          <h3>Removed:</h3>
-          {changes.removed.map((fid) => {
-            const user = users.find((user) => user.fid === fid);
-            return user ? <UserDisplay key={fid} user={user} /> : null;
-          })}
-        </div>
-      )}
-    </div>
+    <Container maxWidth="md">
+      <Box my={2} textAlign="center">
+        <Typography variant="h4">{title}</Typography>
+        <Box my={1}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={toggleShowFollowing}
+          >
+            {showFollowing ? "View Follower Changes" : "View Following Changes"}
+          </Button>
+        </Box>
+        <Box my={1}>
+          <Switch
+            checked={showAdded}
+            onChange={() => setShowAdded(!showAdded)}
+            name="showAdded"
+            inputProps={{ "aria-label": "showAdded" }}
+          />
+          <span>{showAdded ? "Follows" : "Unfollows"}</span>
+        </Box>
+      </Box>
+
+      <Box my={2} textAlign="center">
+        {showAdded ? (
+          <div>
+            <h3>Added:</h3>
+            {changes.added
+              .map((fid) => {
+                const user = users.find((user) => user.fid === fid);
+                return user ? <UserDisplay key={fid} user={user} /> : null;
+              })
+              .slice(startIndex, endIndex)}
+          </div>
+        ) : (
+          <div>
+            <h3>Removed:</h3>
+            {changes.removed
+              .map((fid) => {
+                const user = users.find((user) => user.fid === fid);
+                return user ? <UserDisplay key={fid} user={user} /> : null;
+              })
+              .slice(startIndex, endIndex)}
+          </div>
+        )}
+      </Box>
+
+      <Box my={2} textAlign="center">
+        {changes.added.length > itemsPerPage && (
+          <Box display="inline-block">
+            {Array.from(
+              { length: Math.ceil(changes.added.length / itemsPerPage) },
+              (_, i) => (
+                <Button
+                  key={i}
+                  style={{
+                    margin: "0 5px",
+                    fontWeight: currentPage === i + 1 ? "bold" : "normal",
+                  }}
+                  onClick={() => handlePageChange(i + 1)}
+                >
+                  {i + 1}
+                </Button>
+              )
+            )}
+          </Box>
+        )}
+      </Box>
+    </Container>
   );
 };
 
