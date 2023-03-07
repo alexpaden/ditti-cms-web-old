@@ -168,6 +168,7 @@ const FollowData = ({ sessionFid }: FollowDataProps) => {
       users={users}
       timeGrouped={timeGrouped}
       showFollowing={showFollowing}
+      sessionFid={sessionFid}
       toggleShowFollowing={() => setShowFollowing(!showFollowing)}
     />
   );

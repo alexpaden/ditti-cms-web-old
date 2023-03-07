@@ -8,6 +8,7 @@ type FollowUIProps = {
   timeGrouped: TimeGrouped | null;
   showFollowing: boolean;
   toggleShowFollowing: () => void;
+  sessionFid: number;
 };
 
 const FollowUI = ({
@@ -15,6 +16,7 @@ const FollowUI = ({
   timeGrouped,
   showFollowing,
   toggleShowFollowing,
+  sessionFid,
 }: FollowUIProps) => {
   if (!users || !timeGrouped) {
     return <p>Loading...</p>;
@@ -35,6 +37,15 @@ const FollowUI = ({
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
+
+  const handleCheckChanges = async () => {
+    try {
+      await fetch(`/api/tracks/${sessionFid}`, { method: "POST" });
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <Container maxWidth="md">
@@ -57,6 +68,11 @@ const FollowUI = ({
             inputProps={{ "aria-label": "showAdded" }}
           />
           <span>{showAdded ? "Follows" : "Unfollows"}</span>
+        </Box>
+        <Box my={1}>
+          <Button variant="contained" onClick={handleCheckChanges}>
+            Check for Changes
+          </Button>
         </Box>
       </Box>
 
