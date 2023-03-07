@@ -77,7 +77,7 @@ export function getAuthOptions(req: IncomingMessage): NextAuthOptions {
             session.fid = user.fid;
           }
         } catch (e) {
-          console.log("In auth ", e);
+          console.error("In auth ", e);
         }
 
         return session;

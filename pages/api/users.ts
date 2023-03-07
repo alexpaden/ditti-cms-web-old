@@ -2,7 +2,6 @@ import { createClient } from "@supabase/supabase-js";
 import { NextApiRequest, NextApiResponse } from "next";
 
 async function fetchUsersByFids(fids: number[]) {
-  console.log(fids.length);
   try {
     // Create a single supabase client for interacting with your database
     const supabase = createClient(
