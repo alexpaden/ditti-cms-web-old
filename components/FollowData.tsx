@@ -41,12 +41,6 @@ const FollowData = ({ sessionFid }: FollowDataProps) => {
   async function groupTracksByTime() {
     const tracks = await fetchTracks();
 
-    // Calculate timestamps for the beginning of the week, two weeks, and month
-    const now = Date.now();
-    const weekStart = now - (now % (7 * 24 * 60 * 60 * 1000));
-    const twoWeeksStart = now - (now % (14 * 24 * 60 * 60 * 1000));
-    const monthStart = now - (now % (30 * 24 * 60 * 60 * 1000));
-
     // Group the tracks by week, two weeks, and month
     const timeGrouped: TimeGrouped = {
       follower_changes: {
@@ -59,53 +53,39 @@ const FollowData = ({ sessionFid }: FollowDataProps) => {
       },
     };
 
-    // Keep track of users who have been added or removed to prevent duplicates
-    const addedUsers: Set<number> = new Set();
-    const removedUsers: Set<number> = new Set();
-
     for (const track of tracks) {
-      // Only consider tracks created before now
-      const trackTime = new Date(track.created_at).getTime();
-      if (trackTime > now) {
-        continue;
-      }
+      // Handle follower changes
 
-      // Add new users who were not previously removed
       for (const added of track.follower_changes.added) {
-        if (!removedUsers.has(added) && !addedUsers.has(added)) {
-          addedUsers.add(added);
+        if (
+          !timeGrouped.follower_changes.added.includes(added) &&
+          !timeGrouped.follower_changes.removed.includes(added)
+        ) {
           timeGrouped.follower_changes.added.push(added);
         }
       }
-      for (const added of track.following_changes.added) {
-        if (!removedUsers.has(added) && !addedUsers.has(added)) {
-          addedUsers.add(added);
-          timeGrouped.following_changes.added.push(added);
-        }
-      }
-
-      // Remove users who were previously added
       for (const removed of track.follower_changes.removed) {
-        if (addedUsers.has(removed)) {
-          addedUsers.delete(removed);
-          const index = timeGrouped.follower_changes.added.indexOf(removed);
-          if (index !== -1) {
-            timeGrouped.follower_changes.added.splice(index, 1);
-          }
-        } else if (!removedUsers.has(removed)) {
-          removedUsers.add(removed);
+        if (
+          !timeGrouped.follower_changes.removed.includes(removed) &&
+          !timeGrouped.follower_changes.added.includes(removed)
+        ) {
           timeGrouped.follower_changes.removed.push(removed);
         }
       }
+      // Handle following changes
+      for (const added of track.following_changes.added) {
+        if (
+          !timeGrouped.following_changes.added.includes(added) &&
+          !timeGrouped.following_changes.removed.includes(added)
+        ) {
+          timeGrouped.following_changes.added.push(added);
+        }
+      }
       for (const removed of track.following_changes.removed) {
-        if (addedUsers.has(removed)) {
-          addedUsers.delete(removed);
-          const index = timeGrouped.following_changes.added.indexOf(removed);
-          if (index !== -1) {
-            timeGrouped.following_changes.added.splice(index, 1);
-          }
-        } else if (!removedUsers.has(removed)) {
-          removedUsers.add(removed);
+        if (
+          !timeGrouped.following_changes.removed.includes(removed) &&
+          !timeGrouped.following_changes.added.includes(removed)
+        ) {
           timeGrouped.following_changes.removed.push(removed);
         }
       }
