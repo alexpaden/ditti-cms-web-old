@@ -1,7 +1,3 @@
-// Code in this file is based on https://docs.login.xyz/integrations/nextauth.js
-// with added process.env.VERCEL_URL detection to support preview deployments
-// and with auth option logic extracted into a 'getAuthOptions' function so it
-// can be used to get the session server-side with 'unstable_getServerSession'
 import { IncomingMessage } from "http";
 import { NextApiRequest, NextApiResponse } from "next";
 import NextAuth, { NextAuthOptions } from "next-auth";
@@ -9,6 +5,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { getCsrfToken } from "next-auth/react";
 import { SiweMessage } from "siwe";
 import { MerkleAPIClient } from "@standard-crypto/farcaster-js";
+
+const merkleApiClient = new MerkleAPIClient({
+  secret: process.env.NEXT_WARP_SECRET!,
+});
 
 export function getAuthOptions(req: IncomingMessage): NextAuthOptions {
   const providers = [
@@ -64,15 +64,15 @@ export function getAuthOptions(req: IncomingMessage): NextAuthOptions {
   return {
     callbacks: {
       async session({ session, token }) {
-        session.address = token.sub;
-        session.user = {
-          name: token.sub,
-        };
         try {
-          const client = new MerkleAPIClient({
-            secret: process.env.NEXT_WARP_SECRET!,
-          });
-          const user = await client.lookupUserByVerification(token.sub!);
+          session.address = token.sub;
+          session.user = {
+            name: token.sub,
+          };
+
+          const user = await merkleApiClient.lookupUserByVerification(
+            token.sub!
+          );
           if (user) {
             session.fid = user.fid;
           }
@@ -83,7 +83,6 @@ export function getAuthOptions(req: IncomingMessage): NextAuthOptions {
         return session;
       },
     },
-    // https://next-auth.js.org/configuration/providers/oauth
     providers,
     secret: process.env.NEXTAUTH_SECRET,
     session: {
@@ -92,8 +91,6 @@ export function getAuthOptions(req: IncomingMessage): NextAuthOptions {
   };
 }
 
-// For more information on each option (and a full list of options) go to
-// https://next-auth.js.org/configuration/options
 export default async function auth(req: NextApiRequest, res: NextApiResponse) {
   const authOptions = getAuthOptions(req);
 
@@ -106,10 +103,8 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
     req.method === "GET" &&
     req.query.nextauth.find((value) => value === "signin");
 
-  // Hide Sign-In with Ethereum from default sign page
   if (isDefaultSigninPage) {
     authOptions.providers.pop();
   }
-
   return await NextAuth(req, res, authOptions);
 }
