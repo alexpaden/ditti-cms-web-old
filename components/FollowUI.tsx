@@ -113,10 +113,16 @@ const FollowUI = ({
       </Box>
 
       <Box my={2} textAlign="center">
-        {changes.added.length > itemsPerPage && (
+        {(showAdded ? changes.added.length : changes.removed.length) >
+          itemsPerPage && (
           <Box display="inline-block">
             {Array.from(
-              { length: Math.ceil(changes.added.length / itemsPerPage) },
+              {
+                length: Math.ceil(
+                  (showAdded ? changes.added.length : changes.removed.length) /
+                    itemsPerPage
+                ),
+              },
               (_, i) => (
                 <Button
                   key={i}
